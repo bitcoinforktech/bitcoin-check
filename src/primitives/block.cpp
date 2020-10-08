@@ -8,9 +8,18 @@
 #include <hash.h>
 #include <tinyformat.h>
 
+#define BEGIN(a)            ((char*)&(a))
+#define END(a)              ((char*)&((&(a))[1]))
+
 uint256 CBlockHeader::GetHash() const
 {
-    return SerializeHash(*this);
+    // Change PoW to Blake
+    
+    // This is sha256d
+    // return SerializeHash(*this);
+
+    // Blake instead
+    return HashBlake(BEGIN(nVersion), END(nNonce));
 }
 
 std::string CBlock::ToString() const
