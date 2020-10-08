@@ -1219,13 +1219,18 @@ bool ReadRawBlockFromDisk(std::vector<uint8_t>& block, const CBlockIndex* pindex
 CAmount GetBlockSubsidy(int nHeight, const Consensus::Params& consensusParams)
 {
     int halvings = nHeight / consensusParams.nSubsidyHalvingInterval;
+    
     // Force block reward to zero when right shift is undefined.
+    // Still valid?  CAmount nSubsidy can be cut in half 63 times
     if (halvings >= 64)
         return 0;
 
-    CAmount nSubsidy = 50 * COIN;
-    // Subsidy is cut in half every 210,000 blocks which will occur approximately every 4 years.
+    // Change subsidy to 150 coins, halving is now 420,000 instead of 210000
+    CAmount nSubsidy = 150 * COIN;
+    
+    // Subsidy is cut in half every 420,000 blocks which will occur approximately every 8 years.
     nSubsidy >>= halvings;
+    
     return nSubsidy;
 }
 
@@ -3346,8 +3351,10 @@ bool CheckBlock(const CBlock& block, BlockValidationState& state, const Consensu
 
 bool IsWitnessEnabled(const CBlockIndex* pindexPrev, const Consensus::Params& params)
 {
-    int height = pindexPrev == nullptr ? 0 : pindexPrev->nHeight + 1;
-    return (height >= params.SegwitHeight);
+    // int height = pindexPrev == nullptr ? 0 : pindexPrev->nHeight + 1;
+    // return (height >= params.SegwitHeight);
+
+    return true;
 }
 
 int GetWitnessCommitmentIndex(const CBlock& block)
@@ -3501,11 +3508,11 @@ static bool ContextualCheckBlock(const CBlock& block, BlockValidationState& stat
     // Enforce rule that the coinbase starts with serialized block height
     if (nHeight >= consensusParams.BIP34Height)
     {
-        CScript expect = CScript() << nHeight;
-        if (block.vtx[0]->vin[0].scriptSig.size() < expect.size() ||
-            !std::equal(expect.begin(), expect.end(), block.vtx[0]->vin[0].scriptSig.begin())) {
-            return state.Invalid(BlockValidationResult::BLOCK_CONSENSUS, "bad-cb-height", "block height mismatch in coinbase");
-        }
+        // CScript expect = CScript() << nHeight;
+        // if (block.vtx[0]->vin[0].scriptSig.size() < expect.size() ||
+        //     !std::equal(expect.begin(), expect.end(), block.vtx[0]->vin[0].scriptSig.begin())) {
+        //     return state.Invalid(BlockValidationResult::BLOCK_CONSENSUS, "bad-cb-height", "block height mismatch in coinbase");
+        // }
     }
 
     // Validation for witness commitments.
